@@ -34,6 +34,8 @@ module.exports = {
     if (!isEqual) {
       throw new Error("Password is incorrect!");
     }
+    user.lastSignInDate = Date.now();
+    await user.save();
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET_KEY,
@@ -41,7 +43,7 @@ module.exports = {
         expiresIn: "1h",
       }
     );
-    return { userId: user.id, token: token, tokenExpiration: 1 };
+    return { userId: user.id, token: token, tokenExpiration: 1, lastSignInDate: user.lastSignInDate };
   },
   me: async (args, req) => {
     if (!req.isAuth) {
