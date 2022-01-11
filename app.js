@@ -25,10 +25,9 @@ app.use(
 
 mongoose
   .connect(
-    // `mongodb+srv://${process.env.MONGO_USER}:${
-    //   process.env.MONGO_PASSWORD
-    // }@cluster0-ntrwp.mongodb.net/${process.env.MONGO_DB}?retryWrites=true`
-    "mongodb://127.0.0.1:27017/talent",
+    // 'mongodb+srv://talent:Talent@123@cluster0.bpd0l.mongodb.net/talent?retryWrites=true&w=majority'
+    `mongodb+srv://talent:${process.env.MONGO_PASSWORD}@cluster0.bpd0l.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+    // "mongodb://127.0.0.1:27017/talent",
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
