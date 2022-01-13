@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const { dateToString } = require('../../helpers/date');
+const { dateToString } = require("../../helpers/date");
 const User = require("../../models/user");
 
 module.exports = {
@@ -25,7 +25,7 @@ module.exports = {
       throw err;
     }
   },
-  login: async ({ email, password }) => {
+  login: async ({ email, password }, context) => {
     const user = await User.findOne({ email: email });
     if (!user) {
       throw new Error("User does not exist!");
@@ -43,7 +43,27 @@ module.exports = {
         expiresIn: "1h",
       }
     );
-    return { userId: user.id, token: token, tokenExpiration: 1, lastSignInDate: user.lastSignInDate };
+
+    const DOMAIN_URI =
+      process.env.NODE_ENV === "production"
+        ? "https://demo1-talent-api.herokuapp.com/graphql"
+        : "http://localhost:3001/graphql";
+
+    // set a cookies with the token value and it's httpOnly
+    context.res.cookie("token", token, {
+      expires: new Date(Date.now() + 900000),
+      httpOnly: true,
+      secure: true,
+      domain: DOMAIN_URI,
+      path: "/",
+    });
+
+    return {
+      userId: user.id,
+      token: token,
+      tokenExpiration: 1,
+      lastSignInDate: user.lastSignInDate,
+    };
   },
   me: async (args, req) => {
     if (!req.isAuth) {
@@ -64,12 +84,12 @@ module.exports = {
   },
   updateUser: async (args, req) => {
     if (!req.isAuth) {
-      throw new Error('Unauthenticated!');
+      throw new Error("Unauthenticated!");
     }
     try {
       const updatedValue = JSON.parse(JSON.stringify(args.updateUserInput));
       const getUser = await User.findById(req.userId);
-      if(updatedValue.password){
+      if (updatedValue.password) {
         updatedValue.password = await bcrypt.hash(updatedValue.password, 12);
       }
       return await User.findOneAndUpdate({ _id: getUser.id }, updatedValue, {
@@ -79,5 +99,19 @@ module.exports = {
     } catch (err) {
       throw err;
     }
+  },
+  logout: async (res) => {
+    const DOMAIN_URI =
+      process.env.NODE_ENV === "production"
+        ? "https://demo1-talent-api.herokuapp.com/graphql"
+        : "http://localhost:3001/graphql";
+    res.clearCookie("token", {
+      domain: DOMAIN_URI,
+      path: "/",
+    });
+
+    return {
+      ok: true,
+    };
   },
 };
