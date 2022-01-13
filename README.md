@@ -1,3 +1,10 @@
+Talent-api is built with
+
+```bash
+Nodejs Expessjs
+graphQL
+```
+
 # Nodejs and GraphQL
 
 #
